@@ -123,6 +123,8 @@
       <p><strong>Language:</strong> <span id="modal-language"></span></p>
       <p><strong>Responsible teacher:</strong> <span id="modal-teacher"></span></p>
       <p><strong>Offered in:</strong> <span id="modal-period"></span></p>
+      <!-- ✅ NEW Notes line -->
+      <p><strong>Notes:</strong> <span id="modal-notes"></span></p>
       <button onclick="hideDetails()">Close</button>
     </div>
   </div>
@@ -131,7 +133,7 @@
     const sheetURL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vRmWeVzzw3X-TU46FBU-lqxbfnAkvc1aorDGCEeB9wRA8nJatg6JDa-ItO6Mz8HTcVzSgp7vNQNIQgW/pub?gid=0&single=true&output=csv";
     let courseData = {};
 
-    const periodOrder = ["Period I", "Period II", "Period III", "Period IV", "Intensive", "Summer", "Implementation"];
+    const periodOrder = ["Period I", "Period II", "Period III", "Period IV", "Implementation", "Intensive", "Summer"];
 
     function switchTab(id) {
       document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
@@ -149,6 +151,7 @@
       document.getElementById("modal-language").textContent = c.language;
       document.getElementById("modal-teacher").textContent = c.teacher;
       document.getElementById("modal-period").textContent = c.period;
+      document.getElementById("modal-notes").textContent = c.Notes || "";
       document.getElementById("modal-container").classList.add("show");
       document.getElementById("overlay").classList.add("show");
     }
@@ -203,7 +206,7 @@
         timeline.appendChild(box);
       });
 
-      // Build specialization - same as original working version
+      // Build specialization - unchanged logic
       const domains = {};
       Object.values(courseData).forEach(c => {
         if (!domains[c.domain]) domains[c.domain] = [];
