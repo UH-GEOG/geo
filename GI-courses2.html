@@ -20,13 +20,13 @@
       background: #ffffff;
     }
 
-    /* --- Legend --- */
+    /* --- Domain Legend --- */
     .legend {
       display: flex;
       flex-wrap: wrap;
       gap: 12px;
       font-size: 0.9em;
-      margin: 10px 0 25px 0;
+      margin: 10px 0 10px 0;
       align-items: center;
     }
     .legend-item { display: flex; align-items: center; gap: 6px; }
@@ -53,20 +53,20 @@
     }
     .course-item:hover { filter: brightness(0.9); }
 
-    /* --- Stage colors (subtle greyscale) --- */
-    .stage-Introductory { border-top-color: #dcdcdc; }      /* very light grey */
-    .stage-Specialization { border-top-color: #bfbfbf; }    /* light grey */
-    .stage-Contextualization { border-top-color: #9e9e9e; } /* medium grey */
-    .stage-Implementation { border-top-color: #7a7a7a; }    /* darker grey */
+    /* --- Stage colors (white → black gradient) --- */
+    .stage-Introductory { border-top-color: #ffffff; }     /* white */
+    .stage-Specialization { border-top-color: #c0c0c0; }   /* light grey */
+    .stage-Contextualization { border-top-color: #606060; }/* dark grey */
+    .stage-Implementation { border-top-color: #000000; }   /* black */
 
     /* --- Flow legend (curriculum pathway) --- */
     .flow-legend {
       display: flex;
       align-items: center;
-      justify-content: center;
+      justify-content: flex-start;
       gap: 10px;
       font-size: 0.9em;
-      margin-bottom: 15px;
+      margin: 10px 0 25px 0;
       flex-wrap: wrap;
     }
     .flow-box {
@@ -79,10 +79,10 @@
       font-weight: bold;
       color: #555;
     }
-    .flow-intro { background: #dcdcdc; }
-    .flow-spec { background: #bfbfbf; }
-    .flow-context { background: #9e9e9e; color: #fff; }
-    .flow-impl { background: #7a7a7a; color: #fff; }
+    .flow-intro { background: #ffffff; border: 1px solid #ccc; }
+    .flow-spec { background: #c0c0c0; }
+    .flow-context { background: #606060; color: #fff; }
+    .flow-impl { background: #000000; color: #fff; }
 
     #modal-container {
       display: none;
@@ -119,6 +119,16 @@
 <body>
   <h1>Geoinformatics Curriculum</h1>
 
+  <!-- DOMAIN LEGEND -->
+  <div class="legend">
+    <div class="legend-item"><span class="legend-color gis"></span> GIS & Programming</div>
+    <div class="legend-item"><span class="legend-color rs"></span> Remote Sensing</div>
+    <div class="legend-item"><span class="legend-color cons"></span> Conservation & Environment</div>
+    <div class="legend-item"><span class="legend-color methods"></span> Methods & Seminar</div>
+    <div class="legend-item"><span class="legend-color urban"></span> Urban & Planning</div>
+    <div class="legend-item"><span class="legend-color thesis"></span> Thesis / Field / Training</div>
+  </div>
+
   <!-- FLOW LEGEND -->
   <div class="flow-legend">
     <div class="flow-box flow-intro">Introductory → Explore Foundations</div>
@@ -130,22 +140,11 @@
     <div class="flow-box flow-impl">Implementation → Integrate and Produce</div>
   </div>
 
-  <!-- DOMAIN LEGEND -->
-  <div class="legend">
-    <div class="legend-item"><span class="legend-color gis"></span> GIS & Programming</div>
-    <div class="legend-item"><span class="legend-color rs"></span> Remote Sensing</div>
-    <div class="legend-item"><span class="legend-color cons"></span> Conservation & Environment</div>
-    <div class="legend-item"><span class="legend-color methods"></span> Methods & Seminar</div>
-    <div class="legend-item"><span class="legend-color urban"></span> Urban & Planning</div>
-    <div class="legend-item"><span class="legend-color thesis"></span> Thesis / Field / Training</div>
-  </div>
-
   <div class="tabs">
     <button class="tab-btn active" onclick="switchTab('timeline')">🗓 Timeline View</button>
     <button class="tab-btn" onclick="switchTab('specialization')">🌱 Specialization View</button>
   </div>
 
-  <!-- CONTAINER FOR DYNAMIC CONTENT -->
   <div id="timeline" class="view active"></div>
   <div id="specialization" class="view"></div>
 
@@ -214,14 +213,12 @@
       timeline.innerHTML = "";
       specialization.innerHTML = "";
 
-      // Group by period
       const periods = {};
       Object.values(courseData).forEach(c => {
         if (!periods[c.period]) periods[c.period] = [];
         periods[c.period].push(c);
       });
 
-      // Build timeline
       periodOrder.forEach(p => {
         if (!periods[p]) return;
         const box = document.createElement("div");
@@ -241,7 +238,6 @@
         timeline.appendChild(box);
       });
 
-      // Build specialization
       const domains = {};
       Object.values(courseData).forEach(c => {
         if (!domains[c.domain]) domains[c.domain] = [];
