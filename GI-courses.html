@@ -132,7 +132,6 @@
     let courseData = {};
 
     const periodOrder = ["Period I", "Period II", "Period III", "Period IV", "Intensive", "Summer", "Implementation"];
-    const domainOrder = ["gis", "rs", "cons", "urban", "methods", "thesis"];
 
     function switchTab(id) {
       document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
@@ -173,16 +172,19 @@
     });
 
     function buildViews() {
-      // --- TIMELINE VIEW ---
+      const timeline = document.getElementById("timeline");
+      const specialization = document.getElementById("specialization");
+      timeline.innerHTML = "";
+      specialization.innerHTML = "";
+
+      // Group by period
       const periods = {};
       Object.values(courseData).forEach(c => {
         if (!periods[c.period]) periods[c.period] = [];
         periods[c.period].push(c);
       });
 
-      const timeline = document.getElementById("timeline");
-      timeline.innerHTML = "";
-
+      // Build timeline
       periodOrder.forEach(p => {
         if (!periods[p]) return;
         const box = document.createElement("div");
@@ -201,29 +203,26 @@
         timeline.appendChild(box);
       });
 
-      // --- SPECIALIZATION VIEW ---
+      // Build specialization - same as original working version
       const domains = {};
       Object.values(courseData).forEach(c => {
         if (!domains[c.domain]) domains[c.domain] = [];
         domains[c.domain].push(c);
       });
 
-      const specialization = document.getElementById("specialization");
-      specialization.innerHTML = "";
+      const domainLabels = {
+        "gis": "GIS & Programming",
+        "rs": "Remote Sensing",
+        "cons": "Conservation & Environment",
+        "urban": "Urban & Planning",
+        "methods": "Methods & Seminar",
+        "thesis": "Thesis / Field / Training"
+      };
 
-      domainOrder.forEach(d => {
-        if (!domains[d]) return;
+      Object.keys(domains).forEach(d => {
         const box = document.createElement("div");
         box.className = "box";
-        let domainLabel = {
-          "gis": "GIS & Programming",
-          "rs": "Remote Sensing",
-          "cons": "Conservation & Environment",
-          "urban": "Urban & Planning",
-          "methods": "Methods & Seminar",
-          "thesis": "Thesis / Field / Training"
-        }[d] || d;
-        box.innerHTML = `<strong>${domainLabel}</strong>`;
+        box.innerHTML = `<strong>${domainLabels[d] || d}</strong>`;
         const list = document.createElement("div");
         list.className = "course-list";
         domains[d].forEach(c => {
