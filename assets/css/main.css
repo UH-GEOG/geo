@@ -3784,18 +3784,3 @@ input, select, textarea {
 
 		}
 		
-/* Highlight the GI Track button */
-#nav .highlight {
-  background-color: #0072ff; /* bright blue */
-  color: white !important;
-  padding: 0.4em 0.8em;
-  border-radius: 8px;
-  font-weight: 600;
-  transition: background-color 0.3s ease, color 0.3s ease;
-}
-
-/* Optional hover effect */
-#nav .highlight:hover {
-  background-color: #0055cc;
-  color: #fff;
-}
