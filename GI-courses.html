@@ -132,6 +132,7 @@
     let courseData = {};
 
     const periodOrder = ["Period I", "Period II", "Period III", "Period IV", "Intensive", "Summer", "Implementation"];
+    const domainOrder = ["gis", "rs", "cons", "urban", "methods", "thesis"];
 
     function switchTab(id) {
       document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
@@ -172,6 +173,7 @@
     });
 
     function buildViews() {
+      // --- TIMELINE VIEW ---
       const periods = {};
       Object.values(courseData).forEach(c => {
         if (!periods[c.period]) periods[c.period] = [];
@@ -199,14 +201,40 @@
         timeline.appendChild(box);
       });
 
-      // Copy same structure to specialization view
-      const specialization = document.getElementById("specialization");
-      specialization.innerHTML = timeline.innerHTML;
+      // --- SPECIALIZATION VIEW ---
+      const domains = {};
+      Object.values(courseData).forEach(c => {
+        if (!domains[c.domain]) domains[c.domain] = [];
+        domains[c.domain].push(c);
+      });
 
-      // 🔧 Rebind click events for specialization items
-      specialization.querySelectorAll(".course-item").forEach(item => {
-        const code = item.textContent.split(" ")[0];
-        item.onclick = () => showDetails(code);
+      const specialization = document.getElementById("specialization");
+      specialization.innerHTML = "";
+
+      domainOrder.forEach(d => {
+        if (!domains[d]) return;
+        const box = document.createElement("div");
+        box.className = "box";
+        let domainLabel = {
+          "gis": "GIS & Programming",
+          "rs": "Remote Sensing",
+          "cons": "Conservation & Environment",
+          "urban": "Urban & Planning",
+          "methods": "Methods & Seminar",
+          "thesis": "Thesis / Field / Training"
+        }[d] || d;
+        box.innerHTML = `<strong>${domainLabel}</strong>`;
+        const list = document.createElement("div");
+        list.className = "course-list";
+        domains[d].forEach(c => {
+          const item = document.createElement("div");
+          item.className = `course-item ${c.domain}`;
+          item.textContent = `${c.code} ${c.title}`;
+          item.onclick = () => showDetails(c.code);
+          list.appendChild(item);
+        });
+        box.appendChild(list);
+        specialization.appendChild(box);
       });
     }
   </script>
