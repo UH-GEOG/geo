@@ -58,9 +58,7 @@
       cursor: pointer;
       transition: background 0.2s ease;
     }
-    .course-item:hover {
-      filter: brightness(0.9);
-    }
+    .course-item:hover { filter: brightness(0.9); }
 
     #modal-container {
       display: none;
@@ -182,6 +180,7 @@
 
       const timeline = document.getElementById("timeline");
       timeline.innerHTML = "";
+
       periodOrder.forEach(p => {
         if (!periods[p]) return;
         const box = document.createElement("div");
@@ -201,7 +200,14 @@
       });
 
       // Copy same structure to specialization view
-      document.getElementById("specialization").innerHTML = timeline.innerHTML;
+      const specialization = document.getElementById("specialization");
+      specialization.innerHTML = timeline.innerHTML;
+
+      // 🔧 Rebind click events for specialization items
+      specialization.querySelectorAll(".course-item").forEach(item => {
+        const code = item.textContent.split(" ")[0];
+        item.onclick = () => showDetails(code);
+      });
     }
   </script>
 </body>
