@@ -134,9 +134,9 @@
     <div class="legend-item"><span class="legend-color rs"></span> Remote Sensing</div>
     <div class="legend-item"><span class="legend-color cons"></span> Conservation & Environment</div>
     <div class="legend-item"><span class="legend-color phys"></span> Physical Geography</div>
-    <div class="legend-item"><span class="legend-color methods"></span> Methods and Other</div>
     <div class="legend-item"><span class="legend-color urban"></span> Urban & Planning</div>
-    <div class="legend-item"><span class="legend-color thesis"></span> Thesis / Field / Training</div>
+    <div class="legend-item"><span class="legend-color methods"></span> Methods and Other</div>
+    <div class="legend-item"><span class="legend-color thesis"></span> Thesis</div>
   </div>
 
   <!-- FLOW LEGEND -->
@@ -165,7 +165,7 @@
   <div id="timeline" class="view active"></div>
   <div id="specialization" class="view"></div>
 
-  <div id="overlay" class="overlay" onclick="hideDetails"></div>
+  <div id="overlay" class="overlay" onclick="hideDetails()"></div>
   <div id="modal-container">
     <div id="modal">
       <h3 id="modal-title"></h3>
@@ -245,14 +245,12 @@
       timeline.innerHTML = "";
       specialization.innerHTML = "";
 
-      // Group by period
       const periods = {};
       Object.values(courseData).forEach(c => {
         if (!periods[c.period]) periods[c.period] = [];
         periods[c.period].push(c);
       });
 
-      // Build Timeline
       periodOrder.forEach(p => {
         if (!periods[p]) return;
         const box = document.createElement("div");
@@ -272,7 +270,6 @@
         timeline.appendChild(box);
       });
 
-      // Build Specialization (ordered: GIS first, Methods and Other last)
       const domains = {};
       Object.values(courseData).forEach(c => {
         if (!domains[c.domain]) domains[c.domain] = [];
@@ -285,11 +282,11 @@
         "cons": "Conservation & Environment",
         "phys": "Physical Geography",
         "urban": "Urban & Planning",
-        "thesis": "Thesis / Field / Training",
-        "methods": "Methods and Other"
+        "methods": "Methods and Other",
+        "thesis": "Thesis"
       };
 
-      const orderedDomains = ["gis", "rs", "cons", "phys", "urban", "thesis", "methods"];
+      const orderedDomains = ["gis", "rs", "cons", "phys", "urban", "methods", "thesis"];
       orderedDomains.forEach(d => {
         if (!domains[d]) return;
         const box = document.createElement("div");
