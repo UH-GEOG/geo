@@ -148,9 +148,9 @@
 
   <!-- OBLIGATORY LEGEND -->
   <div class="oblig-legend">
-    <strong>Obligatory:</strong> <span style="font-weight:bold;">bold</span> &nbsp;|&nbsp;
-    <strong>Obligatory with various options:</strong> <span style="font-style:italic;">italic</span> &nbsp;|&nbsp;
-    <strong>Not obligatory:</strong> normal text
+    <span style="font-weight:bold;">Obligatory</span> &nbsp;|&nbsp;
+    <span style="font-style:italic;">Obligatory with various options</span> &nbsp;|&nbsp;
+    <span>Not obligatory</span>
   </div>
 
   <div class="tabs">
@@ -179,6 +179,8 @@
     const sheetURL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vRmWeVzzw3X-TU46FBU-lqxbfnAkvc1aorDGCEeB9wRA8nJatg6JDa-ItO6Mz8HTcVzSgp7vNQNIQgW/pub?gid=0&single=true&output=csv";
     let courseData = {};
 
+    // Keep the real period key as "Implementation" (from the sheet),
+    // but we'll DISPLAY it as "Flexible" in the timeline header.
     const periodOrder = ["Period I", "Period II", "Period III", "Period IV", "Implementation", "Intensive", "Summer"];
 
     function switchTab(id) {
@@ -241,11 +243,13 @@
         periods[c.period].push(c);
       });
 
+      // Build timeline (display "Implementation" as "Flexible")
       periodOrder.forEach(p => {
         if (!periods[p]) return;
         const box = document.createElement("div");
         box.className = "box";
-        box.innerHTML = `<strong>${p}</strong>`;
+        const displayLabel = (p === "Implementation") ? "Flexible" : p; // << only a display change
+        box.innerHTML = `<strong>${displayLabel}</strong>`;
         const list = document.createElement("div");
         list.className = "course-list";
         periods[p].forEach(c => {
@@ -260,6 +264,7 @@
         timeline.appendChild(box);
       });
 
+      // Build specialization (unchanged)
       const domains = {};
       Object.values(courseData).forEach(c => {
         if (!domains[c.domain]) domains[c.domain] = [];
