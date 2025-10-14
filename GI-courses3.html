@@ -179,9 +179,8 @@
     const sheetURL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vRmWeVzzw3X-TU46FBU-lqxbfnAkvc1aorDGCEeB9wRA8nJatg6JDa-ItO6Mz8HTcVzSgp7vNQNIQgW/pub?gid=0&single=true&output=csv";
     let courseData = {};
 
-    // Keep the real period key as "Implementation" (from the sheet),
-    // but we'll DISPLAY it as "Flexible" in the timeline header.
-    const periodOrder = ["Period I", "Period II", "Period III", "Period IV", "Implementation", "Intensive", "Summer"];
+    // Timeline now ends with "Flexible"
+    const periodOrder = ["Period I", "Period II", "Period III", "Period IV", "Intensive", "Summer", "Flexible"];
 
     function switchTab(id) {
       document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
@@ -243,13 +242,12 @@
         periods[c.period].push(c);
       });
 
-      // Build timeline (display "Implementation" as "Flexible")
+      // Build timeline (now Flexible is last)
       periodOrder.forEach(p => {
         if (!periods[p]) return;
         const box = document.createElement("div");
         box.className = "box";
-        const displayLabel = (p === "Implementation") ? "Flexible" : p; // << only a display change
-        box.innerHTML = `<strong>${displayLabel}</strong>`;
+        box.innerHTML = `<strong>${p}</strong>`;
         const list = document.createElement("div");
         list.className = "course-list";
         periods[p].forEach(c => {
