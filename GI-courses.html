@@ -1,0 +1,208 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Geoinformatics Curriculum</title>
+  <script src="https://cdn.jsdelivr.net/npm/papaparse@5.4.1/papaparse.min.js"></script>
+  <style>
+    body { font-family: sans-serif; padding: 20px; background: #f9f9f9; }
+    .tabs { margin-bottom: 20px; }
+    .tab-btn { padding: 10px 20px; margin-right: 10px; cursor: pointer; border: none; background: #e0e0e0; border-radius: 5px; }
+    .tab-btn.active { background: #0077cc; color: white; }
+    .view { display: none; }
+    .view.active { display: block; }
+    .box {
+      border-radius: 8px;
+      padding: 15px;
+      margin: 20px 10px;
+      width: fit-content;
+      box-shadow: 0 0 8px rgba(0, 0, 0, 0.1);
+      background: #ffffff;
+    }
+
+    /* --- Legend --- */
+    .legend {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 12px;
+      font-size: 0.9em;
+      margin: 10px 0 25px 0;
+      align-items: center;
+    }
+    .legend-item {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+    .legend-color {
+      width: 16px;
+      height: 16px;
+      border-radius: 3px;
+      display: inline-block;
+      border: 1px solid #999;
+    }
+
+    /* --- Domain Colors --- */
+    .gis { background: #cce5ff; }
+    .rs { background: #d9f2d9; }
+    .cons { background: #fff2cc; }
+    .urban { background: #f7c6c7; }
+    .methods { background: #e0ccff; }
+    .thesis { background: #d9d9d9; }
+
+    .course-list { font-size: 0.9em; color: #333; }
+    .course-item {
+      margin: 6px 0;
+      padding: 4px 8px;
+      border-radius: 4px;
+      cursor: pointer;
+      transition: background 0.2s ease;
+    }
+    .course-item:hover {
+      filter: brightness(0.9);
+    }
+
+    #modal-container {
+      display: none;
+      position: fixed;
+      top: 0; left: 0;
+      width: 100%; height: 100%;
+      z-index: 1001;
+      justify-content: center;
+      align-items: center;
+    }
+    #modal-container.show { display: flex; }
+    #overlay {
+      display: none;
+      position: fixed;
+      top: 0; left: 0;
+      width: 100%; height: 100%;
+      z-index: 999;
+      background: rgba(0,0,0,0.5);
+    }
+    #overlay.show { display: block; }
+    #modal {
+      background: white;
+      width: 400px;
+      padding: 20px;
+      border-radius: 10px;
+      box-shadow: 0 0 10px rgba(0,0,0,0.3);
+      position: relative;
+      z-index: 1001;
+    }
+    #modal h3 { margin-top: 0; }
+    #modal button { margin-top: 10px; }
+  </style>
+</head>
+<body>
+  <h1>Geoinformatics Curriculum</h1>
+
+  <!-- LEGEND -->
+  <div class="legend">
+    <div class="legend-item"><span class="legend-color gis"></span> GIS & Programming</div>
+    <div class="legend-item"><span class="legend-color rs"></span> Remote Sensing</div>
+    <div class="legend-item"><span class="legend-color cons"></span> Conservation & Environment</div>
+    <div class="legend-item"><span class="legend-color methods"></span> Methods & Seminar</div>
+    <div class="legend-item"><span class="legend-color urban"></span> Urban & Planning</div>
+    <div class="legend-item"><span class="legend-color thesis"></span> Thesis / Field / Training</div>
+  </div>
+
+  <div class="tabs">
+    <button class="tab-btn active" onclick="switchTab('timeline')">🗓 Timeline View</button>
+    <button class="tab-btn" onclick="switchTab('specialization')">🌱 Specialization View</button>
+  </div>
+
+  <!-- CONTAINER FOR DYNAMIC CONTENT -->
+  <div id="timeline" class="view active"></div>
+  <div id="specialization" class="view"></div>
+
+  <div id="overlay" class="overlay" onclick="hideDetails()"></div>
+  <div id="modal-container">
+    <div id="modal">
+      <h3 id="modal-title"></h3>
+      <p id="modal-description"></p>
+      <p><strong>Credits:</strong> <span id="modal-credits"></span></p>
+      <p><strong>Language:</strong> <span id="modal-language"></span></p>
+      <p><strong>Responsible teacher:</strong> <span id="modal-teacher"></span></p>
+      <p><strong>Offered in:</strong> <span id="modal-period"></span></p>
+      <button onclick="hideDetails()">Close</button>
+    </div>
+  </div>
+
+  <script>
+    const sheetURL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vRmWeVzzw3X-TU46FBU-lqxbfnAkvc1aorDGCEeB9wRA8nJatg6JDa-ItO6Mz8HTcVzSgp7vNQNIQgW/pub?gid=0&single=true&output=csv";
+    let courseData = {};
+
+    const periodOrder = ["Period I", "Period II", "Period III", "Period IV", "Intensive", "Summer", "Implementation"];
+
+    function switchTab(id) {
+      document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
+      document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+      document.getElementById(id).classList.add('active');
+      event.target.classList.add('active');
+    }
+
+    function showDetails(code) {
+      const c = courseData[code];
+      if (!c) return;
+      document.getElementById("modal-title").textContent = c.title;
+      document.getElementById("modal-description").textContent = c.description;
+      document.getElementById("modal-credits").textContent = c.credits;
+      document.getElementById("modal-language").textContent = c.language;
+      document.getElementById("modal-teacher").textContent = c.teacher;
+      document.getElementById("modal-period").textContent = c.period;
+      document.getElementById("modal-container").classList.add("show");
+      document.getElementById("overlay").classList.add("show");
+    }
+
+    function hideDetails() {
+      document.getElementById("modal-container").classList.remove("show");
+      document.getElementById("overlay").classList.remove("show");
+    }
+
+    // --- Load data from Google Sheet ---
+    Papa.parse(sheetURL, {
+      download: true,
+      header: true,
+      complete: function(results) {
+        results.data.forEach(row => {
+          if (!row.code) return;
+          courseData[row.code] = row;
+        });
+        buildViews();
+      }
+    });
+
+    function buildViews() {
+      const periods = {};
+      Object.values(courseData).forEach(c => {
+        if (!periods[c.period]) periods[c.period] = [];
+        periods[c.period].push(c);
+      });
+
+      const timeline = document.getElementById("timeline");
+      timeline.innerHTML = "";
+      periodOrder.forEach(p => {
+        if (!periods[p]) return;
+        const box = document.createElement("div");
+        box.className = "box";
+        box.innerHTML = `<strong>${p}</strong>`;
+        const list = document.createElement("div");
+        list.className = "course-list";
+        periods[p].forEach(c => {
+          const item = document.createElement("div");
+          item.className = `course-item ${c.domain}`;
+          item.textContent = `${c.code} ${c.title}`;
+          item.onclick = () => showDetails(c.code);
+          list.appendChild(item);
+        });
+        box.appendChild(list);
+        timeline.appendChild(box);
+      });
+
+      // Copy same structure to specialization view
+      document.getElementById("specialization").innerHTML = timeline.innerHTML;
+    }
+  </script>
+</body>
+</html>

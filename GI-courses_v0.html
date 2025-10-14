@@ -1,0 +1,218 @@
+<!-- MODALS & INTERACTIVITY RESTORED -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Geoinformatics Curriculum</title>
+  <style>
+    body { font-family: sans-serif; padding: 20px; background: #f9f9f9; }
+    .tabs { margin-bottom: 20px; }
+    .tab-btn { padding: 10px 20px; margin-right: 10px; cursor: pointer; border: none; background: #e0e0e0; border-radius: 5px; }
+    .tab-btn.active { background: #0077cc; color: white; }
+    .view { display: none; }
+    .view.active { display: block; }
+    .box {
+      border-radius: 8px;
+      padding: 15px;
+      margin: 20px 10px;
+      width: fit-content;
+      box-shadow: 0 0 8px rgba(0, 0, 0, 0.1);
+      background: #ffffff;
+    }
+    .timeline-period { background: #fff6cc; }
+    .specialization-phase { background: #d6f5d6; }
+    .course-list { font-size: 0.9em; color: #333; }
+    .course-item {
+      margin: 6px 0;
+      padding: 4px 8px;
+      border-radius: 4px;
+      background: #f0f0f0;
+      cursor: pointer;
+      transition: background 0.2s ease;
+    }
+    .course-item:hover { background: #cce6ff; color: #003366; }
+    #modal-container {
+  display: none;
+  position: fixed;
+  top: 0; left: 0;
+  width: 100%; height: 100%;
+  z-index: 1001;
+  justify-content: center;
+  align-items: center;
+}
+    #modal-container.show {
+      display: flex;
+    }
+    #overlay {
+      display: none;
+      position: fixed;
+      top: 0; left: 0;
+      width: 100%; height: 100%;
+      z-index: 999;
+      background: rgba(0,0,0,0.5);
+    }
+    #overlay.show {
+      display: block;
+    }
+    #modal {
+      background: white;
+      width: 400px;
+      padding: 20px;
+      border-radius: 10px;
+      box-shadow: 0 0 10px rgba(0,0,0,0.3);
+      position: relative;
+      z-index: 1001;
+    }
+    #modal h3 { margin-top: 0; }
+    #modal button { margin-top: 10px; }
+  </style>
+</head>
+<body>
+  <h1>Geoinformatics Curriculum</h1>
+  <div class="tabs">
+    <button class="tab-btn active" onclick="switchTab('timeline')">🗓 Timeline View</button>
+    <button class="tab-btn" onclick="switchTab('specialization')">🌱 Specialization View</button>
+  </div>
+
+  <div id="timeline" class="view active">
+  <div class="box timeline-period">
+    <strong>Period I</strong>
+    <div class="course-list">
+      <div class="course-item" onclick="showDetails('GEOG-301')">GEOG-301 Geographical thinking</div>
+      <div class="course-item" onclick="showDetails('GEOG-H302')">GEOG-H302 Quantitative research techniques</div>
+      <div class="course-item" onclick="showDetails('GEOG-302')">GEOG-302 Intro to RS of Environment</div>
+      <div class="course-item" onclick="showDetails('GEOG-340')">GEOG-340 Conservation geography</div>
+    </div>
+  </div>
+  <div class="box timeline-period">
+    <strong>Period II</strong>
+    <div class="course-list">
+      <div class="course-item" onclick="showDetails('GEOG-329-2')">GEOG-329-2 AutoGIS 2</div>
+      <div class="course-item" onclick="showDetails('GEOG-505')">GEOG-505 Spatial analytics (Aalto)</div>
+      <div class="course-item" onclick="showDetails('GEOG-506')">GEOG-506 Theories & techniques in GIS (Aalto)</div>
+      <div class="course-item" onclick="showDetails('GEOG-XXX')">Remote sensing of cryosphere</div>
+    </div>
+  </div>
+  <div class="box timeline-period">
+    <strong>Period III</strong>
+    <div class="course-list">
+      <div class="course-item" onclick="showDetails('GEOG-324')">GEOG-324 Hyperspectral remote sensing</div>
+      <div class="course-item" onclick="showDetails('GEOG-306')">GEOG-306 Quantitative data analysis</div>
+      <div class="course-item" onclick="showDetails('GEOG-348')">GEOG-348 Area-based conservation</div>
+      <div class="course-item" onclick="showDetails('GEOG-388')">GEOG-388 Seminar in Geoinformatics (planning)</div>
+    </div>
+  </div>
+  <div class="box timeline-period">
+    <strong>Period IV</strong>
+    <div class="course-list">
+      <div class="course-item" onclick="showDetails('GEOG-322')">GEOG-322 Advanced remote sensing</div>
+      <div class="course-item" onclick="showDetails('GEOG-327')">GEOG-327 Spatial conservation planning</div>
+      <div class="course-item" onclick="showDetails('GEOG-502')">GEOG-502 Urban and regional development</div>
+      <div class="course-item" onclick="showDetails('GEOG-XXX-urban')">Urban analytics and spatial stats</div>
+    </div>
+  </div>
+  <div class="box timeline-period">
+    <strong>Intensive</strong>
+    <div class="course-list">
+      <div class="course-item" onclick="showDetails('GEOG-349')">GEOG-349 Cartographic Visualization</div>
+      <div class="course-item" onclick="showDetails('GEOG-YYY')">Topical questions in geospatial research</div>
+    </div>
+  </div>
+  <div class="box timeline-period">
+    <strong>Summer</strong>
+    <div class="course-list">
+      <div class="course-item" onclick="showDetails('Thesis')">Thesis</div>
+      <div class="course-item" onclick="showDetails('Training')">Practical training</div>
+    </div>
+  </div>
+</div>
+<div id="specialization" class="view">
+  <div class="box specialization-phase">
+    <strong>Introductory</strong>
+    <div class="course-list">
+      <div class="course-item" onclick="showDetails('GEOG-301')">GEOG-301 Geographical thinking</div>
+      <div class="course-item" onclick="showDetails('GEOG-H302')">GEOG-H302 Quantitative research techniques</div>
+      <div class="course-item" onclick="showDetails('GEOG-302')">GEOG-302 Intro to RS of Environment</div>
+      <div class="course-item" onclick="showDetails('GEOG-340')">GEOG-340 Conservation geography</div>
+    </div>
+  </div>
+  <div class="box specialization-phase">
+    <strong>Specialization</strong>
+    <div class="course-list">
+      <div class="course-item" onclick="showDetails('GEOG-329-2')">GEOG-329-2 AutoGIS 2</div>
+      <div class="course-item" onclick="showDetails('GEOG-505')">GEOG-505 Spatial analytics (Aalto)</div>
+      <div class="course-item" onclick="showDetails('GEOG-506')">GEOG-506 Theories & techniques in GIS</div>
+      <div class="course-item" onclick="showDetails('GEOG-XXX')">Remote sensing of cryosphere</div>
+      <div class="course-item" onclick="showDetails('GEOG-324')">GEOG-324 Hyperspectral remote sensing</div>
+      <div class="course-item" onclick="showDetails('GEOG-306')">GEOG-306 Quantitative data analysis</div>
+      <div class="course-item" onclick="showDetails('GEOG-348')">GEOG-348 Area-based conservation</div>
+    </div>
+  </div>
+  <div class="box specialization-phase">
+    <strong>Dive Deeper</strong>
+    <div class="course-list">
+      <div class="course-item" onclick="showDetails('GEOG-322')">GEOG-322 Advanced remote sensing</div>
+      <div class="course-item" onclick="showDetails('GEOG-327')">GEOG-327 Spatial conservation planning</div>
+      <div class="course-item" onclick="showDetails('GEOG-XXX-urban')">Urban analytics and spatial stats</div>
+      <div class="course-item" onclick="showDetails('GEOG-502')">GEOG-502 Urban & regional development</div>
+      <div class="course-item" onclick="showDetails('GEOG-349')">GEOG-349 Cartographic Visualization</div>
+      <div class="course-item" onclick="showDetails('GEOG-503')">GEOG-503 Land use planning systems</div>
+    </div>
+  </div>
+  <div class="box specialization-phase">
+    <strong>Implementation</strong>
+    <div class="course-list">
+      <div class="course-item" onclick="showDetails('GEOG-388')">GEOG-388 Seminar in Geoinformatics</div>
+      <div class="course-item" onclick="showDetails('GEOG-388-thesis')">GEOG-388 Seminar (thesis writing)</div>
+      <div class="course-item" onclick="showDetails('Thesis')">Thesis</div>
+      <div class="course-item" onclick="showDetails('Training')">Practical training</div>
+      <div class="course-item" onclick="showDetails('GEOG-330')">GEOG-330 Taita field course</div>
+    </div>
+  </div>
+</div>
+  
+
+  <div id="overlay" class="overlay" onclick="hideDetails()"></div>
+  <div id="modal-container">
+    <div id="modal">
+      <h3 id="modal-title"></h3>
+      <p id="modal-description"></p>
+      <p><strong>Credits:</strong> <span id="modal-credits"></span></p>
+      <p><strong>Language:</strong> <span id="modal-language"></span></p>
+      <button onclick="hideDetails()">Close</button>
+    </div>
+  </div>
+
+  <script>
+    const courseData = {
+      "GEOG-301": { title: "GEOG-301 Geographical thinking", description: "Foundations of geographical theory and methods.", credits: 5, language: "English" },
+      "GEOG-505": { title: "GEOG-505 Spatial analytics (Aalto)", description: "Advanced spatial data science techniques.", credits: 5, language: "English" },
+      "GEOG-306": { title: "GEOG-306 Quantitative methods", description: "Statistical methods for spatial data.", credits: 5, language: "English" },
+      "GEOG-388": { title: "GEOG-388 Seminar in Geoinformatics", description: "Capstone seminar with presentations and peer feedback.", credits: 5, language: "English" },
+      "Thesis": { title: "Master's Thesis", description: "Independent research project.", credits: 30, language: "English" },
+    };
+
+    function switchTab(id) {
+      document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
+      document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+      document.getElementById(id).classList.add('active');
+      event.target.classList.add('active');
+    }
+
+    function showDetails(code) {
+      const c = courseData[code] || { title: code, description: "Course details coming soon.", credits: "", language: "" };
+      document.getElementById("modal-title").textContent = c.title;
+      document.getElementById("modal-description").textContent = c.description;
+      document.getElementById("modal-credits").textContent = c.credits;
+      document.getElementById("modal-language").textContent = c.language;
+      document.getElementById("modal-container").classList.add("show");
+      document.getElementById("overlay").classList.add("show");
+    }
+
+    function hideDetails() {
+      document.getElementById("modal-container").classList.remove("show");
+      document.getElementById("overlay").classList.remove("show");
+    }
+  </script>
+</body>
+</html>
