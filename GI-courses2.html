@@ -53,11 +53,11 @@
     }
     .course-item:hover { filter: brightness(0.9); }
 
-    /* --- Stage colors (top border) --- */
-    .stage-Introductory { border-top-color: #fff15a; }      /* warm yellow */
-    .stage-Specialization { border-top-color: #f4c2f0; }    /* soft pink */
-    .stage-Contextualization { border-top-color: #b6e7b1; } /* mint green */
-    .stage-Implementation { border-top-color: #90d2f9; }    /* light blue */
+    /* --- Stage colors (subtle greyscale) --- */
+    .stage-Introductory { border-top-color: #dcdcdc; }      /* very light grey */
+    .stage-Specialization { border-top-color: #bfbfbf; }    /* light grey */
+    .stage-Contextualization { border-top-color: #9e9e9e; } /* medium grey */
+    .stage-Implementation { border-top-color: #7a7a7a; }    /* darker grey */
 
     /* --- Flow legend (curriculum pathway) --- */
     .flow-legend {
@@ -79,10 +79,10 @@
       font-weight: bold;
       color: #555;
     }
-    .flow-intro { background: #fff15a; }
-    .flow-spec { background: #f4c2f0; }
-    .flow-context { background: #b6e7b1; }
-    .flow-impl { background: #90d2f9; }
+    .flow-intro { background: #dcdcdc; }
+    .flow-spec { background: #bfbfbf; }
+    .flow-context { background: #9e9e9e; color: #fff; }
+    .flow-impl { background: #7a7a7a; color: #fff; }
 
     #modal-container {
       display: none;
@@ -241,7 +241,7 @@
         timeline.appendChild(box);
       });
 
-      // Build specialization (same logic)
+      // Build specialization
       const domains = {};
       Object.values(courseData).forEach(c => {
         if (!domains[c.domain]) domains[c.domain] = [];
