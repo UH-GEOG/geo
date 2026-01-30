@@ -7,67 +7,92 @@
   <style>
     body {
       font-family: system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
-      margin: 18px;
+      margin: 0;
       line-height: 1.45;
+      background: #fff;
+      color: #111;
     }
-    h1 { margin: 0 0 8px 0; font-size: 26px; }
+
+    .container {
+      max-width: 1100px;
+      margin: 0 auto;
+      padding: 18px;
+    }
+
+    h1 {
+      margin: 0 0 8px 0;
+      font-size: 26px;
+    }
+
     .intro {
       color: #333;
-      max-width: 980px;
       margin-bottom: 14px;
     }
+
     .intro .meta {
       color: #666;
-      margin-top: 6px;
+      margin-top: 8px;
+      font-size: 14px;
     }
-    table { border-collapse: collapse; width: 100%; }
+
+    .status {
+      color: #666;
+      margin: 8px 0 10px 0;
+      font-size: 14px;
+    }
+
+    .table-wrap {
+      overflow: auto;
+      max-height: 75vh;
+      border: 1px solid #eee;
+      border-radius: 10px;
+    }
+
+    table { border-collapse: collapse; width: 100%; min-width: 900px; }
     th, td {
-      border: 1px solid #ddd;
-      padding: 8px 10px;
+      border-bottom: 1px solid #eee;
+      padding: 10px 12px;
       text-align: left;
       vertical-align: top;
     }
-    th { background: #f5f5f5; position: sticky; top: 0; }
-    .meta { color: #666; margin: 8px 0 10px 0; }
+    th {
+      background: #fafafa;
+      position: sticky;
+      top: 0;
+      border-bottom: 1px solid #e6e6e6;
+    }
+    tr:hover td { background: #fcfcfc; }
+    a { color: inherit; }
   </style>
 </head>
 <body>
+  <div class="container">
+    <h1>MSc thesis topic suggestions</h1>
 
-  <h1>MSc thesis topic suggestions</h1>
+    <div class="intro">
+      These are master’s thesis topic suggestions proposed by Geoinformatics staff in the Department of Geosciences and Geography at the University of Helsinki.
+      Currently, there are <span id="topicCount">…</span> available topics. If any of them interest you, if you’d like to discuss details, or if you want to propose your own topic, feel free to reach out to the responsible supervisor(s).
+      The table will be updated regularly.
+      <div class="meta" id="lastUpdated"></div>
+    </div>
 
-  <div class="intro">
-    These are master’s thesis topic suggestions proposed by Geoinformatics staff in the Department of Geosciences and Geography at the University of Helsinki.
-    Currently, there are <span id="topicCount">…</span> available topics. If any of them interest you, if you’d like to discuss details, or if you want to propose your own topic, feel free to reach out to the responsible supervisor(s).
-    The table will be updated regularly.
-    <div class="meta" id="lastUpdated"></div>
-  </div>
+    <div class="status" id="status">Loading…</div>
 
-  <div class="meta" id="meta">Loading…</div>
-
-  <div style="overflow:auto; max-height:80vh;">
-    <table id="table"></table>
+    <div class="table-wrap">
+      <table id="table"></table>
+    </div>
   </div>
 
   <script>
     const CSV_URL =
       "https://docs.google.com/spreadsheets/d/e/2PACX-1vRNi_gEvu9KIfyk1m2otEz0V9SBbsJZXSBw_q6u0MOTncXOwTsmIQf1DaLJz9zKbhZpR5z7hP4xJNni/pub?output=csv";
 
-    const GVIZ_META_URL =
-      "https://docs.google.com/spreadsheets/d/e/2PACX-1vRNi_gEvu9KIfyk1m2otEz0V9SBbsJZXSBw_q6u0MOTncXOwTsmIQf1DaLJz9zKbhZpR5z7hP4xJNni/gviz/tq?tqx=out:json";
-
-    const metaEl = document.getElementById("meta");
+    const statusEl = document.getElementById("status");
     const tableEl = document.getElementById("table");
     const topicCountEl = document.getElementById("topicCount");
     const lastUpdatedEl = document.getElementById("lastUpdated");
 
     const DESIRED_HEADERS = ["Topic", "Descritption", "Supervisor", "Email", "Date added"];
-
-    function extractUpdatedTimeFromGviz(text) {
-      const match = text.match(/"lastModified"\s*:\s*"([^"]+)"/);
-      if (!match) return null;
-      const d = new Date(match[1]);
-      return isNaN(d.getTime()) ? null : d;
-    }
 
     function parseCSV(text) {
       const rows = [];
@@ -88,12 +113,7 @@
 
         if (ch === '"') { inQuotes = true; continue; }
 
-        if (ch === ",") {
-          row.push(cur);
-          cur = "";
-          continue;
-        }
-
+        if (ch === ",") { row.push(cur); cur = ""; continue; }
         if (ch === "\r") continue;
 
         if (ch === "\n") {
@@ -175,22 +195,27 @@
 
     async function load() {
       try {
-        fetch(GVIZ_META_URL)
-          .then(r => r.text())
-          .then(t => {
-            const d = extractUpdatedTimeFromGviz(t);
-            if (d) {
-              lastUpdatedEl.textContent =
-                `Last updated: ${d.toLocaleDateString()} ${d.toLocaleTimeString()}`;
-            }
-          })
-          .catch(() => {});
+        statusEl.textContent = "Loading…";
 
-        metaEl.textContent = "Loading…";
         const res = await fetch(CSV_URL, { cache: "no-store" });
         if (!res.ok) throw new Error(`Fetch failed: ${res.status} ${res.statusText}`);
-        const csv = await res.text();
 
+        // Try to use server-provided last modified timestamp
+        const lastMod = res.headers.get("last-modified");
+        if (lastMod) {
+          const d = new Date(lastMod);
+          if (!isNaN(d.getTime())) {
+            lastUpdatedEl.textContent =
+              `Last updated: ${d.toLocaleDateString()} ${d.toLocaleTimeString()}`;
+          }
+        } else {
+          // Fallback: at least show when the page fetched it
+          const d = new Date();
+          lastUpdatedEl.textContent =
+            `Last fetched: ${d.toLocaleDateString()} ${d.toLocaleTimeString()}`;
+        }
+
+        const csv = await res.text();
         const rows = parseCSV(csv);
         if (!rows.length) throw new Error("CSV was empty.");
 
@@ -211,9 +236,9 @@
 
         topicCountEl.textContent = String(dataRows.length);
         renderTable(DESIRED_HEADERS, dataRows, headerIndexMap);
-        metaEl.textContent = `${dataRows.length} topics`;
+        statusEl.textContent = `${dataRows.length} topics`;
       } catch (e) {
-        metaEl.textContent = "Failed to load the table";
+        statusEl.textContent = "Failed to load the table";
         topicCountEl.textContent = "0";
         console.error(e);
       }
@@ -221,6 +246,5 @@
 
     load();
   </script>
-
 </body>
 </html>
