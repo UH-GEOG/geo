@@ -209,10 +209,12 @@
   <div class="tabs">
     <button class="tab-btn active" onclick="switchTab('timeline')">🧭 Timeline View</button>
     <button class="tab-btn" onclick="switchTab('specialization')">🌱 Specialization View</button>
+      <button class="tab-btn" onclick="switchTab(\'theme\')">🎨 Theme View</button>
   </div>
 
   <div id="timeline" class="view active"></div>
   <div id="specialization" class="view"></div>
+  <div id="theme" class="view"></div>
 
   <div id="overlay" class="overlay" onclick="hideDetails()"></div>
   <div id="modal-container">
@@ -297,8 +299,10 @@
     function buildViews() {
       const timeline = document.getElementById("timeline");
       const specialization = document.getElementById("specialization");
+      const theme = document.getElementById("theme");
       timeline.innerHTML = "";
       specialization.innerHTML = "";
+      theme.innerHTML = "";
 
       const periods = {};
       Object.values(courseData).forEach(c => {
@@ -362,6 +366,40 @@
         box.appendChild(list);
         specialization.appendChild(box);
       });
+      // --- THEME VIEW ---
+      const themes = {};
+      Object.values(courseData).forEach(c => {
+        const tRaw = (c.theme || c.Theme || c.themes || c.Themes || "").trim();
+        const t = tRaw !== "" ? tRaw : "Other";
+        if (!themes[t]) themes[t] = [];
+        themes[t].push(c);
+      });
+
+      const orderedThemes = Object.keys(themes).sort((a, b) => {
+        if (a === "Other") return 1;
+        if (b === "Other") return -1;
+        return a.localeCompare(b);
+      });
+
+      orderedThemes.forEach(t => {
+        const box = document.createElement("div");
+        box.className = "box";
+        box.innerHTML = `<strong>${t}</strong>`;
+        const list = document.createElement("div");
+        list.className = "course-list";
+        themes[t].forEach(c => {
+          const item = document.createElement("div");
+          const stageClass = c.stage ? `stage-${c.stage}` : "";
+          item.className = `course-item ${c.domain} ${stageClass}`;
+          item.dataset.year = c.year ? c.year.trim() : "";
+          item.innerHTML = formatTitle(c);
+          item.onclick = () => showDetails(c.code);
+          list.appendChild(item);
+        });
+        box.appendChild(list);
+        theme.appendChild(box);
+      });
+
     }
 
     function highlightYear(y) {
