@@ -1,0 +1,160 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Table Viewer</title>
+  <style>
+    body {
+      font-family: system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
+      margin: 16px;
+    }
+    table { border-collapse: collapse; width: 100%; }
+    th, td {
+      border: 1px solid #ddd;
+      padding: 8px 10px;
+      text-align: left;
+      vertical-align: top;
+    }
+    th { background: #f5f5f5; position: sticky; top: 0; }
+    .meta { color: #666; margin-bottom: 8px; white-space: pre-wrap; }
+  </style>
+</head>
+<body>
+
+  <div class="meta" id="meta">Loading…</div>
+
+  <div style="overflow:auto; max-height:80vh;">
+    <table id="table"></table>
+  </div>
+
+  <script>
+    // Published CSV endpoint derived from your pubhtml link
+    const CSV_URL =
+      "https://docs.google.com/spreadsheets/d/e/2PACX-1vRNi_gEvu9KIfyk1m2otEz0V9SBbsJZXSBw_q6u0MOTncXOwTsmIQf1DaLJz9zKbhZpR5z7hP4xJNni/pub?output=csv";
+
+    const metaEl = document.getElementById("meta");
+    const tableEl = document.getElementById("table");
+
+    // Simple CSV parser that handles quoted values and commas/newlines inside quotes
+    function parseCSV(text) {
+      const rows = [];
+      let row = [];
+      let cur = "";
+      let inQuotes = false;
+
+      for (let i = 0; i < text.length; i++) {
+        const ch = text[i];
+        const next = text[i + 1];
+
+        if (inQuotes) {
+          if (ch === '"' && next === '"') { cur += '"'; i++; continue; }
+          if (ch === '"') { inQuotes = false; continue; }
+          cur += ch;
+          continue;
+        }
+
+        if (ch === '"') { inQuotes = true; continue; }
+
+        if (ch === ",") {
+          row.push(cur);
+          cur = "";
+          continue;
+        }
+
+        if (ch === "\r") continue;
+
+        if (ch === "\n") {
+          row.push(cur);
+          rows.push(row);
+          row = [];
+          cur = "";
+          continue;
+        }
+
+        cur += ch;
+      }
+
+      // last cell
+      row.push(cur);
+      rows.push(row);
+
+      // drop trailing empty last line if present
+      if (rows.length && rows[rows.length - 1].length === 1 && rows[rows.length - 1][0] === "") {
+        rows.pop();
+      }
+
+      return rows;
+    }
+
+    function renderTable(headers, dataRows) {
+      tableEl.innerHTML = "";
+
+      const thead = document.createElement("thead");
+      const trh = document.createElement("tr");
+
+      const thIdx = document.createElement("th");
+      thIdx.textContent = "#";
+      trh.appendChild(thIdx);
+
+      headers.forEach(h => {
+        const th = document.createElement("th");
+        th.textContent = h;
+        trh.appendChild(th);
+      });
+
+      thead.appendChild(trh);
+      tableEl.appendChild(thead);
+
+      const tbody = document.createElement("tbody");
+      dataRows.forEach((r, i) => {
+        const tr = document.createElement("tr");
+
+        const tdIdx = document.createElement("td");
+        tdIdx.textContent = String(i + 1);
+        tr.appendChild(tdIdx);
+
+        headers.forEach((_, colIndex) => {
+          const td = document.createElement("td");
+          td.textContent = (r[colIndex] ?? "").toString();
+          tr.appendChild(td);
+        });
+
+        tbody.appendChild(tr);
+      });
+
+      tableEl.appendChild(tbody);
+      metaEl.textContent = `${dataRows.length} rows`;
+    }
+
+    async function load() {
+      try {
+        metaEl.textContent = "Loading…";
+        const res = await fetch(CSV_URL, { cache: "no-store" });
+        if (!res.ok) throw new Error(`Fetch failed: ${res.status} ${res.statusText}`);
+        const csv = await res.text();
+
+        const rows = parseCSV(csv);
+        if (!rows.length) throw new Error("CSV was empty.");
+
+        // Use the sheet's first row as headers (expected: Topic, Descritption, Supervisor, Date added)
+        const headers = rows[0].map(h => (h || "").trim());
+        const dataRows = rows.slice(1);
+
+        renderTable(headers, dataRows);
+      } catch (e) {
+        metaEl.textContent =
+          "Failed to load the table.\n\n" +
+          "Checklist:\n" +
+          "1) The sheet must be Published to the web.\n" +
+          "2) The link must be accessible without signing in.\n\n" +
+          "Error: " + e.message;
+        console.error(e);
+      }
+    }
+
+    load();
+  </script>
+
+</body>
+</html>
