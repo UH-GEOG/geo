@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Available topics</title>
+  <title>Thesis topics</title>
   <style>
     body {
       font-family: system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
@@ -16,10 +16,9 @@
       max-width: 980px;
       margin-bottom: 14px;
     }
-    .meta {
+    .intro .meta {
       color: #666;
-      margin: 8px 0 10px 0;
-      white-space: pre-wrap;
+      margin-top: 6px;
     }
     table { border-collapse: collapse; width: 100%; }
     th, td {
@@ -29,15 +28,18 @@
       vertical-align: top;
     }
     th { background: #f5f5f5; position: sticky; top: 0; }
+    .meta { color: #666; margin: 8px 0 10px 0; }
   </style>
 </head>
 <body>
 
-  <h1>Available topics</h1>
+  <h1>MSc thesis topic suggestions</h1>
 
-  <div class="intro" id="introText">
+  <div class="intro">
     These are master’s thesis topic suggestions proposed by Geoinformatics staff in the Department of Geosciences and Geography at the University of Helsinki.
     Currently, there are <span id="topicCount">…</span> available topics. If any of them interest you, if you’d like to discuss details, or if you want to propose your own topic, feel free to reach out to the responsible supervisor(s).
+    The table will be updated regularly.
+    <div class="meta" id="lastUpdated"></div>
   </div>
 
   <div class="meta" id="meta">Loading…</div>
@@ -47,18 +49,26 @@
   </div>
 
   <script>
-    // Published CSV endpoint derived from your pubhtml link
     const CSV_URL =
       "https://docs.google.com/spreadsheets/d/e/2PACX-1vRNi_gEvu9KIfyk1m2otEz0V9SBbsJZXSBw_q6u0MOTncXOwTsmIQf1DaLJz9zKbhZpR5z7hP4xJNni/pub?output=csv";
+
+    const GVIZ_META_URL =
+      "https://docs.google.com/spreadsheets/d/e/2PACX-1vRNi_gEvu9KIfyk1m2otEz0V9SBbsJZXSBw_q6u0MOTncXOwTsmIQf1DaLJz9zKbhZpR5z7hP4xJNni/gviz/tq?tqx=out:json";
 
     const metaEl = document.getElementById("meta");
     const tableEl = document.getElementById("table");
     const topicCountEl = document.getElementById("topicCount");
+    const lastUpdatedEl = document.getElementById("lastUpdated");
 
-    // Desired column order in the table (besides the index column)
     const DESIRED_HEADERS = ["Topic", "Descritption", "Supervisor", "Email", "Date added"];
 
-    // Simple CSV parser that handles quoted values and commas/newlines inside quotes
+    function extractUpdatedTimeFromGviz(text) {
+      const match = text.match(/"lastModified"\s*:\s*"([^"]+)"/);
+      if (!match) return null;
+      const d = new Date(match[1]);
+      return isNaN(d.getTime()) ? null : d;
+    }
+
     function parseCSV(text) {
       const rows = [];
       let row = [];
@@ -143,7 +153,6 @@
           const idx = headerIndexMap[h];
           td.textContent = (idx !== undefined ? (r[idx] ?? "") : "").toString();
 
-          // Small usability touch: if the Email cell looks like an email, render mailto link
           if (h === "Email") {
             const email = td.textContent.trim();
             if (email && email.includes("@") && !email.includes(" ")) {
@@ -166,6 +175,17 @@
 
     async function load() {
       try {
+        fetch(GVIZ_META_URL)
+          .then(r => r.text())
+          .then(t => {
+            const d = extractUpdatedTimeFromGviz(t);
+            if (d) {
+              lastUpdatedEl.textContent =
+                `Last updated: ${d.toLocaleDateString()} ${d.toLocaleTimeString()}`;
+            }
+          })
+          .catch(() => {});
+
         metaEl.textContent = "Loading…";
         const res = await fetch(CSV_URL, { cache: "no-store" });
         if (!res.ok) throw new Error(`Fetch failed: ${res.status} ${res.statusText}`);
@@ -177,32 +197,25 @@
         const sheetHeaders = rows[0].map(h => (h || "").trim());
         const dataRowsAll = rows.slice(1);
 
-        // Build a map from normalized header -> index
         const normToIndex = {};
         sheetHeaders.forEach((h, i) => { normToIndex[normalizeHeader(h)] = i; });
 
-        // Use your desired headers; map each to the sheet index if present
         const headerIndexMap = {};
         DESIRED_HEADERS.forEach(h => {
-          const idx = normToIndex[normalizeHeader(h)];
-          headerIndexMap[h] = idx; // may be undefined if missing
+          headerIndexMap[h] = normToIndex[normalizeHeader(h)];
         });
 
-        // Count non-empty rows (based on Topic or any cell)
-        const dataRows = dataRowsAll.filter(r => r.some(v => (v ?? "").toString().trim() !== ""));
-        topicCountEl.textContent = String(dataRows.length);
+        const dataRows = dataRowsAll.filter(r =>
+          r.some(v => (v ?? "").toString().trim() !== "")
+        );
 
+        topicCountEl.textContent = String(dataRows.length);
         renderTable(DESIRED_HEADERS, dataRows, headerIndexMap);
         metaEl.textContent = `${dataRows.length} topics`;
       } catch (e) {
-        metaEl.textContent =
-          "Failed to load the table.\n\n" +
-          "Checklist:\n" +
-          "1) The sheet must be Published to the web.\n" +
-          "2) The link must be accessible without signing in.\n\n" +
-          "Error: " + e.message;
-        console.error(e);
+        metaEl.textContent = "Failed to load the table";
         topicCountEl.textContent = "0";
+        console.error(e);
       }
     }
 
