@@ -367,38 +367,59 @@
         specialization.appendChild(box);
       });
       // --- THEME VIEW ---
-      const themes = {};
-      Object.values(courseData).forEach(c => {
-        const tRaw = (c.theme || c.Theme || c.themes || c.Themes || "").trim();
-        const t = tRaw !== "" ? tRaw : "Other";
-        if (!themes[t]) themes[t] = [];
-        themes[t].push(c);
-      });
+// Theme buckets are fixed to match the 7 themes requested.
+// All courses are included, regrouped based on their existing `domain` value.
+const themeBuckets = {
+  "gis": [],
+  "rs": [],
+  "cons": [],
+  "phys": [],
+  "urban": [],
+  "methods": [],
+  "thesis": []
+};
 
-      const orderedThemes = Object.keys(themes).sort((a, b) => {
-        if (a === "Other") return 1;
-        if (b === "Other") return -1;
-        return a.localeCompare(b);
-      });
+Object.values(courseData).forEach(c => {
+  const d = (c.domain || "").trim();
+  if (themeBuckets[d]) themeBuckets[d].push(c);
+  else themeBuckets["methods"].push(c);
+});
 
-      orderedThemes.forEach(t => {
-        const box = document.createElement("div");
-        box.className = "box";
-        box.innerHTML = `<strong>${t}</strong>`;
-        const list = document.createElement("div");
-        list.className = "course-list";
-        themes[t].forEach(c => {
-          const item = document.createElement("div");
-          const stageClass = c.stage ? `stage-${c.stage}` : "";
-          item.className = `course-item ${c.domain} ${stageClass}`;
-          item.dataset.year = c.year ? c.year.trim() : "";
-          item.innerHTML = formatTitle(c);
-          item.onclick = () => showDetails(c.code);
-          list.appendChild(item);
-        });
-        box.appendChild(list);
-        theme.appendChild(box);
-      });
+const themeLabels = {
+  "gis": "GIS & Programming",
+  "rs": "Remote Sensing",
+  "cons": "Conservation & Environment",
+  "phys": "Physical Geography",
+  "urban": "Urban & Planning",
+  "methods": "Methods and Other",
+  "thesis": "Thesis"
+};
+
+const orderedThemeKeys = ["gis", "rs", "cons", "phys", "urban", "methods", "thesis"];
+orderedThemeKeys.forEach(key => {
+  const courses = themeBuckets[key];
+  if (!courses || courses.length === 0) return;
+
+  const box = document.createElement("div");
+  box.className = "box";
+  box.innerHTML = `<strong>${themeLabels[key]}</strong>`;
+
+  const list = document.createElement("div");
+  list.className = "course-list";
+
+  courses.forEach(c => {
+    const item = document.createElement("div");
+    const stageClass = c.stage ? `stage-${c.stage}` : "";
+    item.className = `course-item ${c.domain} ${stageClass}`;
+    item.dataset.year = c.year ? c.year.trim() : "";
+    item.innerHTML = formatTitle(c);
+    item.onclick = () => showDetails(c.code);
+    list.appendChild(item);
+  });
+
+  box.appendChild(list);
+  theme.appendChild(box);
+});
 
     }
 
@@ -417,5 +438,50 @@
       });
     }
   </script>
+
+<script>
+function buildThemeView() {
+  const themes = [
+    "GIS & Programming",
+    "Remote Sensing",
+    "Conservation & Environment",
+    "Physical Geography",
+    "Urban & Planning",
+    "Methods and Other",
+    "Thesis"
+  ];
+
+  const container = document.getElementById("theme-view");
+  if (!container || container.dataset.built === "true") return;
+
+  const courses = document.querySelectorAll(".course");
+  themes.forEach(theme => {
+    const section = document.createElement("div");
+    section.className = "year-block";
+
+    const title = document.createElement("h3");
+    title.textContent = theme;
+    section.appendChild(title);
+
+    courses.forEach(c => {
+      if (c.dataset.theme === theme) {
+        section.appendChild(c.cloneNode(true));
+      }
+    });
+
+    container.appendChild(section);
+  });
+
+  container.dataset.built = "true";
+}
+
+// hook into existing tab switch without modifying it
+const _origSwitchTab = switchTab;
+switchTab = function(tab) {
+  _origSwitchTab(tab);
+  if (tab === "theme") buildThemeView();
+};
+</script>
+
 </body>
 </html>
